@@ -164,3 +164,43 @@ th { font-weight: 600; }
     header h1 { font-size: 1.3em; text-align: center; }
     .tabel-container { overflow-x: auto; }
 }
+
+/* ==================================================================== */
+/* === GAYA CETAK BARU (LEBIH MODERN & RAMAH SELULER) === */
+/* ==================================================================== */
+@media print {
+    /* Atur halaman cetak agar sesuai ukuran kertas struk */
+    @page {
+        size: 80mm auto; /* Lebar standar kertas struk 80mm, tinggi otomatis */
+        margin: 5mm;     /* Beri margin 0.5cm di semua sisi kertas */
+    }
+
+    /* Sembunyikan semua elemen yang tidak ingin dicetak */
+    body > *:not(#area-struk) {
+        display: none !important;
+    }
+
+    /* Pastikan area struk terlihat dan mengambil seluruh ruang */
+    #area-struk {
+        display: block !important;
+        visibility: visible !important;
+        position: static !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        background-color: white !important;
+    }
+
+    /* Pastikan konten di dalam area struk juga terlihat */
+    #area-struk #struk-content {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    /* Hentikan tombol aksi ("Cetak Struk", "Transaksi Baru") agar tidak ikut tercetak */
+    .struk-actions {
+        display: none !important;
+    }
+}
