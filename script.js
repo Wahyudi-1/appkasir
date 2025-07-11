@@ -3,7 +3,7 @@
 // ====================================================================
 
 // PASTIKAN URL WEB APP ANDA SUDAH BENAR DI SINI
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoVUTmICGD_3zlc3d7sheBat0FAjfCZ2_xL-11IBHTTIbCi91VudEfnPijbvQdpUm70Q/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzG0jpT2mj2-iu12OfgMjrngyWTARrrzM52TL3IUyKoXig01TE5FW2h5h_-Uy8ROxZd/exec"; 
 
 // --- ELEMEN-ELEMEN HTML ---
 const loginContainer = document.getElementById('login-container');
@@ -72,6 +72,7 @@ let semuaDataLaporan = [];
 // ====================================================================
 // TAHAP 2: FUNGSI-FUNGSI LOGIN & SESI
 // ====================================================================
+
 function checkLoginStatus() {
     const user = sessionStorage.getItem('user');
     if (user) {
@@ -96,11 +97,10 @@ async function handleLogin(e) {
     const formData = new FormData(formLogin);
     const username = formData.get('username');
     const passwordAsli = formData.get('password');
-    // Hashing dilakukan di sisi backend untuk keamanan terbaik
     const dataUntukKirim = new FormData();
     dataUntukKirim.append('action', 'loginUser');
     dataUntukKirim.append('username', username);
-    dataUntukKirim.append('password', passwordAsli); // Kirim password asli, biarkan backend yg hash
+    dataUntukKirim.append('password', passwordAsli);
     
     const button = formLogin.querySelector('button');
     button.disabled = true;
@@ -138,9 +138,10 @@ function handleLogout() {
 // ====================================================================
 // TAHAP 3: FUNGSI-FUNGSI PEMBANTU & LOGIKA APLIKASI
 // ====================================================================
+
 function tampilkanNotifikasi(pesan, tipe) {
     notifikasi.textContent = pesan;
-    notifikasi.className = tipe;
+    notifikasi.className = `notifikasi ${tipe}`; // Class dasar ditambahkan
     notifikasi.classList.remove('hidden');
     setTimeout(() => {
         notifikasi.classList.add('hidden');
@@ -183,19 +184,32 @@ function renderTabelBarang() {
     tabelBarangBody.innerHTML = '';
     semuaDataBarang.forEach(item => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${item.Kode_Barang}</td><td>${item.Nama_Barang}</td><td>${item.Kategori_Barang}</td><td>${item.Stok_Pcs}</td><td>${formatRupiah(item.Harga_Pcs)}</td><td><button class="btn-aksi btn-ubah" data-id="${item.ID_Barang}">Ubah</button><button class="btn-aksi btn-hapus" data-id="${item.ID_Barang}">Hapus</button></td>`;
+        tr.innerHTML = `
+            <td>${item.Kode_Barang}</td>
+            <td>${item.Nama_Barang}</td>
+            <td>${item.Kategori_Barang}</td>
+            <td>${item.Stok_Pcs}</td>
+            <td>${formatRupiah(item.Harga_Pcs)}</td>
+            <td>
+                <button class="btn-aksi btn-ubah" data-id="${item.ID_Barang}">Ubah</button>
+                <button class="btn-aksi btn-hapus" data-id="${item.ID_Barang}">Hapus</button>
+            </td>
+        `;
         tabelBarangBody.appendChild(tr);
     });
 }
+
 
 async function handleFormSubmit(e) {
     e.preventDefault();
     const formData = new FormData(formBarang);
     const action = modeEdit ? 'ubahBarang' : 'tambahBarang';
     formData.append('action', action);
+
     const button = modeEdit ? btnSimpan : btnTambah;
     button.disabled = true;
     button.textContent = 'Memproses...';
+
     try {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
@@ -221,9 +235,7 @@ async function handleFormSubmit(e) {
 
 function masukModeEdit(dataBarang) {
     modeEdit = true;
-    formBarang.scrollIntoView({
-        behavior: 'smooth'
-    });
+    formBarang.scrollIntoView({ behavior: 'smooth' });
     for (const key in dataBarang) {
         if (formBarang.elements[key]) {
             formBarang.elements[key].value = dataBarang[key];
@@ -273,7 +285,15 @@ function renderTabelPengguna() {
     tabelPenggunaBody.innerHTML = '';
     semuaDataPengguna.forEach(user => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${user.Username}</td><td>${user.Nama_Lengkap}</td><td>${user.Role}</td><td><button class="btn-aksi btn-ubah" data-id="${user.ID_Pengguna}">Ubah</button><button class="btn-aksi btn-hapus" data-id="${user.ID_Pengguna}">Hapus</button></td>`;
+        tr.innerHTML = `
+            <td>${user.Username}</td>
+            <td>${user.Nama_Lengkap}</td>
+            <td>${user.Role}</td>
+            <td>
+                <button class="btn-aksi btn-ubah" data-id="${user.ID_Pengguna}">Ubah</button>
+                <button class="btn-aksi btn-hapus" data-id="${user.ID_Pengguna}">Hapus</button>
+            </td>
+        `;
         tabelPenggunaBody.appendChild(tr);
     });
 }
@@ -282,7 +302,9 @@ async function handleFormSubmitPengguna(e) {
     e.preventDefault();
     const formData = new FormData(formPengguna);
     const action = modeEditPengguna ? 'ubahPengguna' : 'tambahPengguna';
-    const passwordValue = formData.get('Password');
+    
+    // PERBAIKAN: Membaca nilai dari input dengan name="Password_Baru"
+    const passwordValue = formData.get('Password_Baru');
 
     const dataUntukKirim = new FormData();
     dataUntukKirim.append('action', action);
@@ -331,17 +353,15 @@ async function handleFormSubmitPengguna(e) {
 
 function masukModeEditPengguna(dataPengguna) {
     modeEditPengguna = true;
-    formPengguna.scrollIntoView({
-        behavior: 'smooth'
-    });
-    // Mengisi form dengan data yang ada
+    formPengguna.scrollIntoView({ behavior: 'smooth' });
     idPenggunaInput.value = dataPengguna.ID_Pengguna;
     formPengguna.elements['Username'].value = dataPengguna.Username;
     formPengguna.elements['Nama_Lengkap'].value = dataPengguna.Nama_Lengkap;
     formPengguna.elements['Role'].value = dataPengguna.Role;
-    // Kosongkan field password dan beri placeholder
-    formPengguna.elements['Password'].value = '';
-    formPengguna.elements['Password'].placeholder = "Isi hanya jika ingin mengubah password";
+    
+    const passwordInput = formPengguna.elements['Password_Baru'];
+    passwordInput.value = '';
+    passwordInput.placeholder = "Isi hanya jika ingin mengubah password";
     
     btnTambahPengguna.classList.add('hidden');
     btnSimpanPengguna.classList.remove('hidden');
@@ -352,7 +372,7 @@ function keluarModeEditPengguna() {
     modeEditPengguna = false;
     formPengguna.reset();
     idPenggunaInput.value = '';
-    formPengguna.elements['Password'].placeholder = "Isi untuk pengguna baru / jika ingin diubah";
+    formPengguna.elements['Password_Baru'].placeholder = "Isi untuk pengguna baru / jika ingin diubah";
     btnTambahPengguna.classList.remove('hidden');
     btnSimpanPengguna.classList.add('hidden');
     btnBatalPengguna.classList.add('hidden');
@@ -368,7 +388,6 @@ function cariBarang() {
         return;
     }
 
-    // PERBAIKAN: Melakukan filter lokal dengan aman
     const hasilFilter = semuaDataBarang.filter(item => {
         const kode = item.Kode_Barang ? String(item.Kode_Barang).toLowerCase() : '';
         const nama = item.Nama_Barang ? String(item.Nama_Barang).toLowerCase() : '';
@@ -394,6 +413,7 @@ function pilihBarang(item) {
     formTambahKeranjang.classList.remove('hidden');
     itemTerpilihDataInput.value = JSON.stringify(item);
     namaBarangTerpilihSpan.innerHTML = `${item.Nama_Barang} <small>(Stok: ${item.Stok_Pcs} Pcs)</small>`;
+    
     selectSatuanKasir.innerHTML = '';
     selectSatuanKasir.add(new Option(`Pcs - ${formatRupiah(item.Harga_Pcs)}`, 'Pcs'));
     if (item.Harga_Lusin > 0 && item.Pcs_Per_Lusin > 0) {
@@ -402,6 +422,7 @@ function pilihBarang(item) {
     if (item.Harga_Karton > 0 && item.Pcs_Per_Karton > 0) {
         selectSatuanKasir.add(new Option(`Karton - ${formatRupiah(item.Harga_Karton)}`, 'Karton'));
     }
+
     inputCari.value = '';
     hasilPencarianDiv.classList.add('hidden');
     inputJumlahKasir.value = 1;
@@ -411,18 +432,17 @@ function pilihBarang(item) {
 function handleTambahKeKeranjang(e) {
     e.preventDefault();
     const itemData = JSON.parse(itemTerpilihDataInput.value);
-    const jumlahDiminta = parseInt(inputJumlahKasir.value);
+    const jumlahDiminta = parseFloat(inputJumlahKasir.value);
     const satuanDiminta = selectSatuanKasir.value;
-    const pcsDiKeranjang = keranjang.filter(item => item.idBarang === itemData.ID_Barang).reduce((total, item) => total + item.jumlahPcs, 0);
+    
+    const pcsDiKeranjang = keranjang
+        .filter(item => item.idBarang === itemData.ID_Barang)
+        .reduce((total, item) => total + item.jumlahPcs, 0);
     
     let pcsAkanDitambah = 0;
-    if (satuanDiminta === 'Pcs') {
-        pcsAkanDitambah = jumlahDiminta;
-    } else if (satuanDiminta === 'Lusin') {
-        pcsAkanDitambah = jumlahDiminta * itemData.Pcs_Per_Lusin;
-    } else if (satuanDiminta === 'Karton') {
-        pcsAkanDitambah = jumlahDiminta * itemData.Pcs_Per_Karton;
-    }
+    if (satuanDiminta === 'Pcs') pcsAkanDitambah = jumlahDiminta;
+    else if (satuanDiminta === 'Lusin') pcsAkanDitambah = jumlahDiminta * itemData.Pcs_Per_Lusin;
+    else if (satuanDiminta === 'Karton') pcsAkanDitambah = jumlahDiminta * itemData.Pcs_Per_Karton;
     
     if ((pcsDiKeranjang + pcsAkanDitambah) > itemData.Stok_Pcs) {
         const sisaStokEfektif = itemData.Stok_Pcs - pcsDiKeranjang;
@@ -444,11 +464,8 @@ function handleTambahKeKeranjang(e) {
         hargaSatuan: hargaSatuan,
         subtotal: jumlahDiminta * hargaSatuan,
         dataAsli: {
-            Harga_Pcs: itemData.Harga_Pcs,
-            Pcs_Per_Lusin: itemData.Pcs_Per_Lusin,
-            Harga_Lusin: itemData.Harga_Lusin,
-            Pcs_Per_Karton: itemData.Pcs_Per_Karton,
-            Harga_Karton: itemData.Harga_Karton
+            Harga_Pcs: itemData.Harga_Pcs, Pcs_Per_Lusin: itemData.Pcs_Per_Lusin, Harga_Lusin: itemData.Harga_Lusin,
+            Pcs_Per_Karton: itemData.Pcs_Per_Karton, Harga_Karton: itemData.Harga_Karton
         }
     };
     
@@ -477,7 +494,13 @@ function renderKeranjang() {
         if (dataAsli.Harga_Lusin > 0 && dataAsli.Pcs_Per_Lusin > 0) satuanOptions += `<option value="Lusin">Lusin</option>`;
         if (dataAsli.Harga_Karton > 0 && dataAsli.Pcs_Per_Karton > 0) satuanOptions += `<option value="Karton">Karton</option>`;
         
-        tr.innerHTML = `<td>${item.namaBarang}</td><td><input type="number" class="qty-keranjang" value="${item.jumlah}" min="1" data-index="${index}"></td><td><select class="satuan-keranjang" data-index="${index}">${satuanOptions}</select></td><td>${formatRupiah(item.subtotal)}</td><td><button class="btn-aksi btn-hapus" data-index="${index}">X</button></td>`;
+        tr.innerHTML = `
+            <td>${item.namaBarang}</td>
+            <td><input type="number" class="qty-keranjang" value="${item.jumlah}" min="0.01" step="any" data-index="${index}"></td>
+            <td><select class="satuan-keranjang" data-index="${index}">${satuanOptions}</select></td>
+            <td>${formatRupiah(item.subtotal)}</td>
+            <td><button class="btn-aksi btn-hapus" data-index="${index}">X</button></td>
+        `;
         tabelKeranjangBody.appendChild(tr);
         tr.querySelector('.satuan-keranjang').value = item.satuan;
         total += item.subtotal;
@@ -489,12 +512,14 @@ function renderKeranjang() {
 function updateKuantitasKeranjang(index, jumlahBaru) {
     const item = keranjang[index];
     if (!item) return;
+    
     const itemDataAsli = semuaDataBarang.find(i => i.ID_Barang === item.idBarang);
     if (!itemDataAsli) {
         alert('Data barang tidak ditemukan. Coba muat ulang halaman.');
         renderKeranjang();
         return;
     }
+
     const stokAwal = itemDataAsli.Stok_Pcs;
     const pcsLainDiKeranjang = keranjang.filter((_, i) => i !== parseInt(index) && keranjang[i].idBarang === item.idBarang).reduce((total, itemLain) => total + itemLain.jumlahPcs, 0);
     
@@ -508,6 +533,7 @@ function updateKuantitasKeranjang(index, jumlahBaru) {
         renderKeranjang();
         return;
     }
+    
     item.jumlah = jumlahBaru;
     item.jumlahPcs = pcsDimintaSekarang;
     item.subtotal = jumlahBaru * item.hargaSatuan;
@@ -517,16 +543,17 @@ function updateKuantitasKeranjang(index, jumlahBaru) {
 function updateSatuanKeranjang(index, satuanBaru) {
     const item = keranjang[index];
     if (!item) return;
+
     const itemDataAsliServer = semuaDataBarang.find(i => i.ID_Barang === item.idBarang);
     if (!itemDataAsliServer) {
         alert('Data barang tidak ditemukan. Coba muat ulang halaman.');
         return;
     }
-    let hargaSatuanBaru = 0;
-    let jumlahPcsBaru = 0;
+    
+    let hargaSatuanBaru = 0, jumlahPcsBaru = 0;
     if (satuanBaru === 'Pcs') {
         hargaSatuanBaru = itemDataAsliServer.Harga_Pcs;
-        jumlahPcsBaru = item.jumlah;
+        jumlahPcsBaru = item.jumlah * 1;
     } else if (satuanBaru === 'Lusin') {
         hargaSatuanBaru = itemDataAsliServer.Harga_Lusin;
         jumlahPcsBaru = item.jumlah * itemDataAsliServer.Pcs_Per_Lusin;
@@ -542,6 +569,7 @@ function updateSatuanKeranjang(index, satuanBaru) {
         renderKeranjang();
         return;
     }
+    
     item.satuan = satuanBaru;
     item.hargaSatuan = hargaSatuanBaru;
     item.jumlahPcs = jumlahPcsBaru;
@@ -570,22 +598,21 @@ async function prosesTransaksi() {
         jumlahBayar: parseFloat(inputBayar.value),
         kembalian: (parseFloat(inputBayar.value) - keranjang.reduce((sum, item) => sum + item.subtotal, 0))
     };
+
     btnProsesTransaksi.disabled = true;
     btnProsesTransaksi.textContent = 'Memproses...';
     try {
         const response = await fetch(`${SCRIPT_URL}?action=prosesTransaksi`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8'
-            },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(dataUntukKirim)
         });
         const result = await response.json();
         if (result.status === 'sukses') {
             menuTransaksi.classList.add('hidden');
             tampilkanStruk(dataUntukKirim, result.idTransaksi);
-            semuaDataBarang = []; // Reset cache data barang
-            semuaDataLaporan = []; // Reset cache laporan
+            semuaDataBarang = [];
+            semuaDataLaporan = [];
         } else {
             tampilkanNotifikasi(result.message, 'error');
             btnProsesTransaksi.disabled = false;
@@ -611,19 +638,76 @@ function tampilkanStruk(dataTransaksi, idTransaksi) {
     areaStruk.classList.remove('hidden');
 }
 
+
+// ====================================================================
+// === FUNGSI CETAK STRUK YANG SUDAH DIPERBAIKI ===
+// ====================================================================
 function cetakStruk() {
-    const konten = strukContent.innerHTML;
-    const jendelaCetak = window.open('', '', 'height=500, width=500');
-    jendelaCetak.document.write('<html><head><title>Struk</title>');
-    jendelaCetak.document.write('<style>body{font-family:monospace; font-size:10pt;} .struk-item{display:flex; justify-content:space-between;} hr{border:none; border-top:1px dashed #000;}</style>');
+    const kontenStruk = document.getElementById('struk-content').innerHTML;
+
+    const gayaCetak = `
+        <style>
+            @media print {
+                @page {
+                    margin: 0;
+                    size: 80mm auto;
+                }
+            }
+            body {
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 10pt;
+                color: #000;
+                margin: 0;
+                padding: 10px;
+                width: 80mm;
+                box-sizing: border-box;
+            }
+            h3 {
+                text-align: center;
+                margin-top: 0;
+                margin-bottom: 10px;
+                font-size: 12pt;
+            }
+            p { margin: 2px 0; }
+            hr {
+                border: none;
+                border-top: 1px dashed #000;
+                margin: 10px 0;
+            }
+            .struk-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+            .struk-item span:first-child {
+                text-align: left;
+                word-break: break-word;
+                flex: 1;
+            }
+            .struk-item span:last-child {
+                text-align: right;
+                min-width: 80px;
+                padding-left: 10px;
+            }
+        </style>
+    `;
+
+    const jendelaCetak = window.open('', '_blank', 'height=600,width=400');
+    jendelaCetak.document.write('<html><head><title>Struk Pembelian</title>');
+    jendelaCetak.document.write(gayaCetak);
     jendelaCetak.document.write('</head><body>');
-    jendelaCetak.document.write(konten);
+    jendelaCetak.document.write(kontenStruk);
     jendelaCetak.document.write('</body></html>');
+
     jendelaCetak.document.close();
     jendelaCetak.focus();
-    jendelaCetak.print();
-    jendelaCetak.close();
+
+    setTimeout(() => {
+        jendelaCetak.print();
+        jendelaCetak.close();
+    }, 250);
 }
+
 
 async function muatLaporan() {
     if (semuaDataLaporan.length > 0) {
@@ -653,7 +737,13 @@ function renderTabelLaporan() {
     semuaDataLaporan.forEach(trx => {
         const detailBarang = JSON.parse(trx.Detail_Barang_JSON).map(item => `${item.namaBarang} (${item.jumlah} ${item.satuan})`).join('<br>');
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${trx.ID_Transaksi}</td><td>${trx.Timestamp_Transaksi}</td><td>${trx.Kasir || ''}</td><td>${detailBarang}</td><td>${formatRupiah(trx.Total_Belanja)}</td>`;
+        tr.innerHTML = `
+            <td>${trx.ID_Transaksi}</td>
+            <td>${trx.Timestamp_Transaksi}</td>
+            <td>${trx.Kasir || ''}</td>
+            <td>${detailBarang}</td>
+            <td>${formatRupiah(trx.Total_Belanja)}</td>
+        `;
         tabelLaporanBody.appendChild(tr);
     });
 }
@@ -662,6 +752,7 @@ function renderTabelLaporan() {
 // ====================================================================
 // TAHAP 5: EVENT LISTENERS UTAMA
 // ====================================================================
+
 function setActiveNav(button) {
     [navManajemen, navTransaksi, navLaporan, navPengguna].forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
@@ -699,25 +790,24 @@ navPengguna.addEventListener('click', () => {
 
 formBarang.addEventListener('submit', handleFormSubmit);
 btnBatal.addEventListener('click', keluarModeEdit);
+
 tabelBarangBody.addEventListener('click', async (e) => {
     const target = e.target;
-    const id = target.dataset.id;
     if (target.classList.contains('btn-ubah')) {
+        const id = target.dataset.id;
         const dataBarang = semuaDataBarang.find(item => item.ID_Barang === id);
         if (dataBarang) masukModeEdit(dataBarang);
     }
     if (target.classList.contains('btn-hapus')) {
         if (confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
+            const id = target.dataset.id;
             const formData = new FormData();
             formData.append('action', 'hapusBarang');
             formData.append('ID_Barang', id);
             target.disabled = true;
             target.textContent = '...';
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
                 const result = await response.json();
                 if (result.status === 'sukses') {
                     tampilkanNotifikasi(result.message, 'sukses');
@@ -728,8 +818,6 @@ tabelBarangBody.addEventListener('click', async (e) => {
                 }
             } catch (error) {
                 tampilkanNotifikasi('Terjadi kesalahan jaringan.', 'error');
-            } finally {
-                target.disabled = false;
             }
         }
     }
@@ -737,23 +825,22 @@ tabelBarangBody.addEventListener('click', async (e) => {
 
 formPengguna.addEventListener('submit', handleFormSubmitPengguna);
 btnBatalPengguna.addEventListener('click', keluarModeEditPengguna);
+
 tabelPenggunaBody.addEventListener('click', async (e) => {
     const target = e.target;
-    const id = target.dataset.id;
     if (target.classList.contains('btn-ubah')) {
+        const id = target.dataset.id;
         const dataPengguna = semuaDataPengguna.find(user => user.ID_Pengguna === id);
         if (dataPengguna) masukModeEditPengguna(dataPengguna);
     }
     if (target.classList.contains('btn-hapus')) {
         if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
+            const id = target.dataset.id;
             const formData = new FormData();
             formData.append('action', 'hapusPengguna');
             formData.append('ID_Pengguna', id);
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
                 const result = await response.json();
                 if (result.status === 'sukses') {
                     tampilkanNotifikasi(result.message, 'sukses');
@@ -769,8 +856,6 @@ tabelPenggunaBody.addEventListener('click', async (e) => {
     }
 });
 
-
-// PERBAIKAN: Event listener untuk rekomendasi di halaman Manajemen Barang
 inputKodeBarang.addEventListener('keyup', (e) => {
     const query = inputKodeBarang.value.toLowerCase();
     if (query.length < 1 || modeEdit) {
@@ -780,8 +865,6 @@ inputKodeBarang.addEventListener('keyup', (e) => {
     }
 
     const hasilFilter = semuaDataBarang.filter(item => {
-        // PERBAIKAN DI SINI:
-        // Memastikan data diubah ke String sebelum .toLowerCase() untuk menghindari error jika datanya berupa angka atau null.
         const kode = item.Kode_Barang ? String(item.Kode_Barang).toLowerCase() : '';
         const nama = item.Nama_Barang ? String(item.Nama_Barang).toLowerCase() : '';
         return kode.includes(query) || nama.includes(query);
@@ -845,7 +928,7 @@ tabelKeranjangBody.addEventListener('change', (e) => {
     const target = e.target;
     const index = target.dataset.index;
     if (target.classList.contains('qty-keranjang')) {
-        const jumlahBaru = parseInt(target.value);
+        const jumlahBaru = parseFloat(target.value);
         if (jumlahBaru > 0) {
             updateKuantitasKeranjang(index, jumlahBaru);
         } else {
