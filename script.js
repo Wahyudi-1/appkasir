@@ -638,96 +638,10 @@ function tampilkanStruk(dataTransaksi, idTransaksi) {
     areaStruk.classList.remove('hidden');
 }
 
+// Ganti SELURUH FUNGSI cetakStruk() YANG LAMA DENGAN VERSI BARU INI
 
-// ====================================================================
-// === FUNGSI CETAK STRUK - VERSI PALING ROBUST (ANTI-OVERRIDE) ===
-// ====================================================================
 function cetakStruk() {
-    const kontenStruk = document.getElementById('struk-content').innerHTML;
-
-    // CSS yang lebih "memaksa" dengan !important dan pengaturan box-sizing yang eksplisit
-    const gayaCetak = `
-        <style>
-            /* Mengatur halaman cetak secara global */
-            @page {
-                size: 80mm auto !important; /* Paksa ukuran kertas dengan !important */
-                margin: 0 !important;       /* Paksa margin menjadi nol */
-            }
-
-            /* Mencegah browser mencetak header/footer default (URL, tanggal, dll) */
-            @media print {
-                body {
-                    -webkit-print-color-adjust: exact; /* Untuk browser berbasis Chrome/Safari */
-                    print-color-adjust: exact;         /* Standar */
-                }
-            }
-
-            html, body {
-                width: 80mm !important; /* Paksa lebar dokumen sesuai kertas */
-                margin: 0 !important;
-                padding: 0 !important;
-                box-sizing: border-box; /* Pastikan padding dihitung dalam lebar total */
-            }
-            
-            body {
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 10pt;
-                color: #000;
-                padding: 5mm !important; /* Beri padding internal agar teks tidak mepet tepi */
-            }
-
-            h3 {
-                text-align: center;
-                margin-top: 0;
-                margin-bottom: 10px;
-                font-size: 12pt;
-            }
-
-            p {
-                margin: 3px 0;
-            }
-
-            hr {
-                border: none;
-                border-top: 1px dashed #000;
-                margin: 10px 0;
-            }
-
-            .struk-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                page-break-inside: avoid; /* Mencegah item terpotong di antara halaman */
-            }
-
-            .struk-item span:first-child, .struk-item strong:first-child {
-                text-align: left;
-                word-break: break-word;
-                flex: 1;
-            }
-
-            .struk-item span:last-child, .struk-item strong:last-child {
-                text-align: right;
-                min-width: 90px;
-                padding-left: 10px;
-            }
-        </style>
-    `;
-
-    const jendelaCetak = window.open('', '_blank');
-    jendelaCetak.document.write('<!DOCTYPE html><html><head><title>Struk Pembelian</title>');
-    jendelaCetak.document.write(gayaCetak);
-    jendelaCetak.document.write('</head><body>');
-    jendelaCetak.document.write(kontenStruk);
-    jendelaCetak.document.write('</body></html>');
-    jendelaCetak.document.close();
-    jendelaCetak.focus();
-
-    // Perpanjang waktu tunggu untuk memastikan semua style diterapkan
-    setTimeout(() => {
-        jendelaCetak.print();
-        jendelaCetak.close();
-    }, 500); // Waktu tunggu dinaikkan menjadi 0.5 detik
+    window.print();
 }
 
 async function muatLaporan() {
