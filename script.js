@@ -640,30 +640,40 @@ function tampilkanStruk(dataTransaksi, idTransaksi) {
 
 
 // ====================================================================
-// === FUNGSI CETAK STRUK YANG SUDAH DIPERBAIKI ===
+// === FUNGSI CETAK STRUK - VERSI PALING ROBUST (ANTI-OVERRIDE) ===
 // ====================================================================
 function cetakStruk() {
     const kontenStruk = document.getElementById('struk-content').innerHTML;
 
-    // Menyiapkan CSS lengkap untuk jendela cetak agar menyerupai struk thermal
+    // CSS yang lebih "memaksa" dengan !important dan pengaturan box-sizing yang eksplisit
     const gayaCetak = `
         <style>
-            /* Mengatur halaman cetak agar sesuai ukuran kertas struk */
+            /* Mengatur halaman cetak secara global */
+            @page {
+                size: 80mm auto !important; /* Paksa ukuran kertas dengan !important */
+                margin: 0 !important;       /* Paksa margin menjadi nol */
+            }
+
+            /* Mencegah browser mencetak header/footer default (URL, tanggal, dll) */
             @media print {
-                @page {
-                    size: 80mm auto; /* Lebar standar kertas struk 80mm, tinggi otomatis */
-                    margin: 0;
+                body {
+                    -webkit-print-color-adjust: exact; /* Untuk browser berbasis Chrome/Safari */
+                    print-color-adjust: exact;         /* Standar */
                 }
             }
 
+            html, body {
+                width: 80mm !important; /* Paksa lebar dokumen sesuai kertas */
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box; /* Pastikan padding dihitung dalam lebar total */
+            }
+            
             body {
                 font-family: 'Courier New', Courier, monospace;
                 font-size: 10pt;
                 color: #000;
-                margin: 0;
-                padding: 10px; /* Jarak dari tepi kertas */
-                width: 80mm;   /* Pastikan lebar konten sama dengan kertas */
-                box-sizing: border-box;
+                padding: 5mm !important; /* Beri padding internal agar teks tidak mepet tepi */
             }
 
             h3 {
@@ -674,7 +684,7 @@ function cetakStruk() {
             }
 
             p {
-                margin: 3px 0; /* Beri sedikit jarak antar baris info */
+                margin: 3px 0;
             }
 
             hr {
@@ -683,53 +693,42 @@ function cetakStruk() {
                 margin: 10px 0;
             }
 
-            /* Style untuk setiap item: nama barang dan harga */
             .struk-item {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start; /* Untuk teks yang panjang dan turun baris */
+                align-items: flex-start;
+                page-break-inside: avoid; /* Mencegah item terpotong di antara halaman */
             }
 
-            /* Bagian kiri (nama barang, total, bayar, kembali) */
             .struk-item span:first-child, .struk-item strong:first-child {
                 text-align: left;
-                word-break: break-word; /* Pecah kata jika nama barang terlalu panjang */
-                flex: 1; /* Ambil sisa ruang */
+                word-break: break-word;
+                flex: 1;
             }
 
-            /* Bagian kanan (harga, subtotal) */
             .struk-item span:last-child, .struk-item strong:last-child {
                 text-align: right;
-                min-width: 90px;     /* Beri lebar minimum agar harga rata kanan */
-                padding-left: 10px;  /* Jarak aman antara nama barang dan harga */
-            }
-
-            strong {
-                font-weight: bold;
+                min-width: 90px;
+                padding-left: 10px;
             }
         </style>
     `;
 
-    // Buka jendela baru untuk proses pencetakan
-    const jendelaCetak = window.open('', '_blank', 'height=600,width=400');
-
-    // Tulis struktur HTML lengkap beserta CSS yang sudah disiapkan
+    const jendelaCetak = window.open('', '_blank');
     jendelaCetak.document.write('<!DOCTYPE html><html><head><title>Struk Pembelian</title>');
     jendelaCetak.document.write(gayaCetak);
     jendelaCetak.document.write('</head><body>');
     jendelaCetak.document.write(kontenStruk);
     jendelaCetak.document.write('</body></html>');
+    jendelaCetak.document.close();
+    jendelaCetak.focus();
 
-    jendelaCetak.document.close(); // Wajib untuk mengakhiri proses penulisan dokumen
-    jendelaCetak.focus(); // Pindahkan fokus ke jendela cetak
-
-    // Beri jeda singkat agar semua konten dan style dimuat sempurna sebelum dialog print muncul
+    // Perpanjang waktu tunggu untuk memastikan semua style diterapkan
     setTimeout(() => {
         jendelaCetak.print();
         jendelaCetak.close();
-    }, 250);
+    }, 500); // Waktu tunggu dinaikkan menjadi 0.5 detik
 }
-
 
 async function muatLaporan() {
     if (semuaDataLaporan.length > 0) {
