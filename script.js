@@ -638,11 +638,7 @@ function tampilkanStruk(dataTransaksi, idTransaksi) {
     areaStruk.classList.remove('hidden');
 }
 
-// Ganti SELURUH FUNGSI cetakStruk() YANG LAMA DENGAN VERSI BARU INI
-
-function cetakStruk() {
-    window.print();
-}
+function cetakStruk() { const konten = strukContent.innerHTML; const jendelaCetak = window.open('', '', 'height=500, width=500'); jendelaCetak.document.write('<html><head><title>Struk</title>'); jendelaCetak.document.write('<style>body{font-family:monospace; font-size:10pt;} .struk-item{display:flex; justify-content:space-between;} hr{border:none; border-top:1px dashed #000;}</style>'); jendelaCetak.document.write('</head><body>'); jendelaCetak.document.write(konten); jendelaCetak.document.write('</body></html>'); jendelaCetak.document.close(); jendelaCetak.focus(); jendelaCetak.print(); jendelaCetak.close(); }
 
 async function muatLaporan() {
     if (semuaDataLaporan.length > 0) {
