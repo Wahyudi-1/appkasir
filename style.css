@@ -166,40 +166,39 @@ th { font-weight: 600; }
 }
 
 /* ==================================================================== */
-/* === GAYA CETAK BARU (LEBIH MODERN & RAMAH SELULER) === */
+/* === GAYA CETAK STRUK (RAMAH SELULER & SESUAI TAMPILAN) === */
 /* ==================================================================== */
+
 @media print {
-    /* Atur halaman cetak agar sesuai ukuran kertas struk */
+    /* 1. Atur halaman cetak agar sesuai ukuran kertas struk */
     @page {
-        size: 80mm auto; /* Lebar standar kertas struk 80mm, tinggi otomatis */
-        margin: 5mm;     /* Beri margin 0.5cm di semua sisi kertas */
+        size: 80mm auto; /* Lebar 80mm (standar thermal), tinggi otomatis */
+        margin: 5mm;     /* Jarak 0.5cm dari semua tepi kertas */
     }
 
-    /* Sembunyikan semua elemen yang tidak ingin dicetak */
-    body > *:not(#area-struk) {
-        display: none !important;
+    /* 2. Sembunyikan semua elemen di halaman secara default */
+    body * {
+        visibility: hidden;
     }
 
-    /* Pastikan area struk terlihat dan mengambil seluruh ruang */
+    /* 3. Tampilkan KEMBALI HANYA area struk dan semua elemen di dalamnya */
+    #area-struk, #area-struk * {
+        visibility: visible;
+    }
+
+    /* 4. Posisikan area struk di bagian paling atas halaman cetak */
     #area-struk {
-        display: block !important;
-        visibility: visible !important;
-        position: static !important;
-        box-shadow: none !important;
-        border: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        max-width: 100% !important;
-        background-color: white !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none;
     }
 
-    /* Pastikan konten di dalam area struk juga terlihat */
-    #area-struk #struk-content {
-        display: block !important;
-        visibility: visible !important;
-    }
-
-    /* Hentikan tombol aksi ("Cetak Struk", "Transaksi Baru") agar tidak ikut tercetak */
+    /* 5. Pastikan tombol aksi tidak ikut tercetak */
     .struk-actions {
         display: none !important;
     }
